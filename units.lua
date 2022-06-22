@@ -12,29 +12,20 @@ ExternalLibrary {
 }  
 
 Program {
-  Name = "mgrorganizer",
+  Name = "minseq",
   Sources = {
-      "mgrorganizer.cpp",
-      "thirdparty/imgui/imgui.cpp",
-      "thirdparty/imgui/imgui_draw.cpp",
-      "thirdparty/imgui/imgui_widgets.cpp",
-      "thirdparty/imgui/imgui_stdlib.cpp",
+      "main.cpp",
   },
   Depends = {
       "defaultConfiguration",
   },
-   Env = {
+  Env = {
       CPPDEFS = {
-         "SOKOL_GLCORE33",
       },
       CPPPATH = {
-        "utils",
-        "thirdparty/",
-        "thirdparty/imgui/",
-        "thirdparty/sokol/",
-        "thirdparty/sokol/util/",
+        "extlibs/",
       },
    },
   Libs = {Config="win32-*-*"; "Comdlg32.lib", "Ole32.lib" },
 }
-Default "mgrorganizer"
+Default "minseq"

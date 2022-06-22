@@ -70,7 +70,7 @@ local common = {
 Build {
   IdeGenerationHints = {
     QtCreator = {
-      SolutionName = "_AnimTest.pro",
+      SolutionName = "_MinSeq.pro",
     },
   },
 	Passes = {

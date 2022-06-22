@@ -609,8 +609,8 @@ inline void setControlMode(const control value) noexcept
 namespace cursor {
 
     struct setVisible final : public rang_implementation::Cursor<setVisible> {
-        const bool visible;
         setVisible(const bool v = true) : visible(v) {}
+        const bool visible;
 
         template <typename CharT, typename Traits>
         void execAnsi(std::basic_ostream<CharT, Traits> &os) const
