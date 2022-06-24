@@ -1,45 +1,69 @@
 
-#include "rang/rang.hpp"
+#include <signal.h>
 
-using namespace rang;
+#include "utils/textio.h"
+#include "utils/linuxinput.h"
 
-struct {
+
+struct EditorState {
 	enum EditScreenMode {
-		eSong, eChain, ePhrase;
+		eSong, eChain, ePhrase
 	};
 	EditScreenMode mEditScreenMode;
 } gEditorState;
 
 void drawMenu(int x, int y) {
-	rang::cursor::setPos(x,y);
+	cursorMove(x, y);
 	
-	if(gEditorState.mEditScreenMode == gEditorState::eSong) {
-		std::ccout << rang::bg::blue << rang::fg::bright_white;
+	setForeground(colorWhite);
+	if(gEditorState.mEditScreenMode == EditorState::eSong) {
+		setBackground(colorBlue);
 	} else {
-		std::ccout << rang::bg::black << rang::fg::bright_white;
+		setBackground(colorBlack);
 	}
-	std::ccout << "S";		//Song
-	if(gEditorState.mEditScreenMode == gEditorState::eChain) {
-		std::ccout << rang::bg::blue << rang::fg::bright_white;
+	printf("S");			//Song
+	if(gEditorState.mEditScreenMode == EditorState::eChain) {
+		setBackground(colorBlue);
 	} else {
-		std::ccout << rang::bg::black << rang::fg::bright_white;
+		setBackground(colorBlack);
 	}
-	std::ccout << "C";		//Chain
-	if(gEditorState.mEditScreenMode == gEditorState::ePhrase) {
-		std::ccout << rang::bg::blue << rang::fg::bright_white;
+	printf("C");			//Chain
+	if(gEditorState.mEditScreenMode == EditorState::ePhrase) {
+		setBackground(colorBlue);
 	} else {
-		std::ccout << rang::bg::black << rang::fg::bright_white;
+		setBackground(colorBlack);
 	}
-	std::ccout << "P";		//Phrase
+	printf("P");			//Phrase
+}
+
+volatile bool interrupt_received = false;
+static void InterruptHandler(int signo) {
+    interrupt_received = true;
 }
 
 int main(int argc, char **argv) {
-	rang::cursor::setVisible(false);
+    set_conio_terminal_mode();
 
-	gEditorState.mEditScreenMode = gEditorState::ePhrase;
+    // It is always good to set up a signal handler to cleanly exit when we
+    // receive a CTRL-C for instance. The DrawOnCanvas() routine is looking
+    // for that.
+    signal(SIGTERM, InterruptHandler);
+    signal(SIGINT, InterruptHandler);
 
-	rang::cursor::setPos(10,10);
-	std::cout << rang::bg::blue << "test" << rang::bg::reset;
+	gEditorState.mEditScreenMode = EditorState::ePhrase;
+
+	ioClearScreen();
+
+    while (!interrupt_received) {
+    	drawMenu(10, 10);
+        if (kbhit()) {
+            int c = getch();
+            if (c == 'q' || c == 'Q') {
+                interrupt_received = true;
+            }
+        }
+    }
 
 	return 0;
 }
+

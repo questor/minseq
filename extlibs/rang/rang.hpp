@@ -24,6 +24,8 @@
 #endif
 
 #if defined(OS_LINUX) || defined(OS_MAC)
+#include <sys/ioctl.h>
+#include <stdio.h>
 #include <unistd.h>
 
 #elif defined(OS_WIN)
@@ -359,8 +361,7 @@ namespace rang_implementation {
     };
 
     template <typename CharT, typename Traits>
-    inline HANDLE
-    getConsoleHandle(const std::basic_streambuf<CharT, Traits> *osbuf) noexcept
+    inline HANDLE getConsoleHandle(const std::basic_streambuf<CharT, Traits> *osbuf) noexcept
     {
         const FILE *ioFile = stdio_file(osbuf);
         if (ioFile == stdout) {
@@ -374,8 +375,7 @@ namespace rang_implementation {
     }
 
     template <typename CharT, typename Traits>
-    inline bool setWinTermAnsiColors(
-      const std::basic_streambuf<CharT, Traits> *osbuf) noexcept
+    inline bool setWinTermAnsiColors(const std::basic_streambuf<CharT, Traits> *osbuf) noexcept
     {
         HANDLE h = getConsoleHandle(osbuf);
         if (h == INVALID_HANDLE_VALUE) {
@@ -393,8 +393,7 @@ namespace rang_implementation {
     }
 
     template <typename CharT, typename Traits>
-    inline bool
-    supportsAnsi(const std::basic_streambuf<CharT, Traits> *osbuf) noexcept
+    inline bool supportsAnsi(const std::basic_streambuf<CharT, Traits> *osbuf) noexcept
     {
         const FILE *ioFile = stdio_file(osbuf);
         if (ioFile == stdout) {
@@ -409,8 +408,7 @@ namespace rang_implementation {
         return false;
     }
 
-    inline const SGR &defaultState() noexcept
-    {
+    inline const SGR &defaultState() noexcept {
         static const SGR defaultSgr = []() -> SGR {
             CONSOLE_SCREEN_BUFFER_INFO info;
             WORD attrib = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
@@ -604,6 +602,22 @@ inline void setWinTermMode(const rang::winTerm value) noexcept
 inline void setControlMode(const control value) noexcept
 {
     rang_implementation::controlMode() = value;
+}
+
+void getWindowSize(int &columns, int &rows) {
+#if defined(OS_LINUX) || defined(OS_MAC)
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    columns = w.ws_col;
+    rows = w.ws_row;
+#elif defined(OS_WIN)
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    int columns, rows;
+
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+    rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+#endif
 }
 
 namespace cursor {
